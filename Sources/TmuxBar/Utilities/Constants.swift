@@ -17,7 +17,7 @@ enum Constants {
     enum Defaults {
         static let terminalApp = TerminalApp.terminal
         static let refreshInterval: TimeInterval = 3.0
-        static let launchAtLogin = false
+        static let launchAtLogin = true
         static let showWindowCount = true
         static let showAttachedIndicator = true
     }
