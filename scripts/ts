@@ -1,0 +1,198 @@
+#!/bin/bash
+# ts - Tmux Session Selector
+# A quick way to select and attach to tmux sessions using fzf
+#
+# Usage:
+#   ts           - Interactive session selector (requires fzf)
+#   ts <name>    - Attach to session by name
+#   ts -n <name> - Create new session
+#   ts -l        - List sessions
+#   ts -k <name> - Kill session
+#   ts -h        - Help
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Check dependencies
+check_fzf() {
+    if ! command -v fzf &> /dev/null; then
+        echo -e "${YELLOW}fzf not found. Install with: brew install fzf${NC}"
+        return 1
+    fi
+    return 0
+}
+
+check_tmux() {
+    if ! command -v tmux &> /dev/null; then
+        echo -e "${RED}tmux not found. Install with: brew install tmux${NC}"
+        exit 1
+    fi
+}
+
+# List sessions
+list_sessions() {
+    if ! tmux list-sessions 2>/dev/null; then
+        echo -e "${YELLOW}No tmux sessions running${NC}"
+        return 1
+    fi
+}
+
+# Interactive session selector
+select_session() {
+    if ! check_fzf; then
+        echo "Available sessions:"
+        list_sessions
+        echo ""
+        echo -e "Usage: ${GREEN}ts <session_name>${NC} to attach"
+        return 1
+    fi
+
+    local sessions
+    sessions=$(tmux list-sessions -F "#{session_name}  #{session_windows} win  #{?session_attached,▶ attached,}" 2>/dev/null)
+
+    if [[ -z "$sessions" ]]; then
+        echo -e "${YELLOW}No tmux sessions.${NC}"
+        read -r -p "Create new session? [Y/n] " response
+        if [[ ! "$response" =~ ^[Nn]$ ]]; then
+            read -r -p "Session name (default: $(basename $(pwd))): " name
+            name="${name:-$(basename $(pwd))}"
+            tmux new-session -s "$name"
+        fi
+        return 0
+    fi
+
+    local selected
+    selected=$(echo "$sessions" | fzf \
+        --height=50% \
+        --reverse \
+        --border \
+        --header="  tmux sessions (Enter=attach, Ctrl-C=cancel)" \
+        --preview='tmux capture-pane -t {1} -p 2>/dev/null | tail -20' \
+        --preview-window=right:50%:wrap)
+
+    if [[ -n "$selected" ]]; then
+        local session_name
+        session_name=$(echo "$selected" | awk '{print $1}')
+        tmux attach -t "$session_name"
+    fi
+}
+
+# Attach to session by name
+attach_session() {
+    local name="$1"
+    if tmux has-session -t "$name" 2>/dev/null; then
+        tmux attach -t "$name"
+    else
+        echo -e "${RED}Session '$name' not found${NC}"
+        echo ""
+        list_sessions
+        return 1
+    fi
+}
+
+# Create new session
+new_session() {
+    local name="$1"
+    local dir="${2:-$(pwd)}"
+
+    if [[ -z "$name" ]]; then
+        name=$(basename "$dir")
+    fi
+
+    if tmux has-session -t "$name" 2>/dev/null; then
+        echo -e "${YELLOW}Session '$name' exists. Attaching...${NC}"
+        tmux attach -t "$name"
+    else
+        echo -e "${GREEN}Creating session '$name'${NC}"
+        tmux new-session -s "$name" -c "$dir"
+    fi
+}
+
+# Kill session
+kill_session() {
+    local name="$1"
+
+    if [[ -z "$name" ]]; then
+        if check_fzf; then
+            local sessions
+            sessions=$(tmux list-sessions -F "#{session_name}" 2>/dev/null)
+            if [[ -z "$sessions" ]]; then
+                echo -e "${YELLOW}No sessions to kill${NC}"
+                return 1
+            fi
+            name=$(echo "$sessions" | fzf --height=40% --reverse --header="Select session to kill")
+            [[ -z "$name" ]] && return 0
+        else
+            echo "Usage: ts -k <session_name>"
+            return 1
+        fi
+    fi
+
+    if tmux has-session -t "$name" 2>/dev/null; then
+        read -r -p "Kill session '$name'? [y/N] " confirm
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            tmux kill-session -t "$name"
+            echo -e "${GREEN}Session '$name' killed${NC}"
+        fi
+    else
+        echo -e "${RED}Session '$name' not found${NC}"
+        return 1
+    fi
+}
+
+# Help
+show_help() {
+    cat << 'EOF'
+ts - Tmux Session Selector
+
+Usage:
+  ts              Interactive session selector (requires fzf)
+  ts <name>       Attach to session by name
+  ts -n <name>    Create new session (default: current dir name)
+  ts -l           List all sessions
+  ts -k [name]    Kill session (interactive if no name)
+  ts -h           Show this help
+
+Examples:
+  ts                    # Select session with fzf
+  ts myproject          # Attach to 'myproject'
+  ts -n api-server      # Create 'api-server' session
+  ts -k                 # Select and kill session
+
+Requirements:
+  - tmux (required)
+  - fzf (optional, for interactive selection)
+
+Install fzf: brew install fzf
+EOF
+}
+
+# Main
+check_tmux
+
+case "${1:-}" in
+    -h|--help)
+        show_help
+        ;;
+    -l|--list)
+        list_sessions
+        ;;
+    -n|--new)
+        new_session "${2:-}" "${3:-}"
+        ;;
+    -k|--kill)
+        kill_session "${2:-}"
+        ;;
+    "")
+        select_session
+        ;;
+    *)
+        attach_session "$1"
+        ;;
+esac

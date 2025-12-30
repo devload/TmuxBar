@@ -65,6 +65,51 @@ Hover over a session and click "Preview..." to see:
 - Working directory
 - Window list
 
+## CLI Tools
+
+TmuxBar also includes command-line tools for quick session switching from any terminal.
+
+### Quick Setup
+
+```bash
+# Add to your .zshrc or .bashrc
+source /path/to/TmuxBar/mac/scripts/tmuxbar.sh
+
+# Or copy the ts script to your PATH
+cp /path/to/TmuxBar/mac/scripts/ts /usr/local/bin/
+```
+
+### ts - Session Selector
+
+Interactive session selector with fzf support:
+
+```bash
+ts              # Select session with fzf (shows preview)
+ts myproject    # Attach to 'myproject' directly
+ts -n api       # Create new session 'api'
+ts -l           # List all sessions
+ts -k           # Kill session (interactive)
+ts -h           # Help
+```
+
+**Requires**: `brew install fzf` for interactive selection
+
+### Shell Functions
+
+After sourcing `tmuxbar.sh`, these commands are available:
+
+| Command | Description |
+|---------|-------------|
+| `ts` | Select and attach (fzf) |
+| `ta <name>` | Attach to session |
+| `tl` | List sessions |
+| `tn [name]` | New session (default: current dir) |
+| `tk [name]` | Kill session |
+| `td` | Detach from session |
+| `tw` | List windows |
+
+**Tab completion** included for zsh and bash!
+
 ## Configuration
 
 ### Preferences
