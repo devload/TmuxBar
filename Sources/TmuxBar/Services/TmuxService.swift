@@ -4,10 +4,17 @@ final class TmuxService {
     static let shared = TmuxService()
 
     private let tmuxPath: String
+    let isTmuxInstalled: Bool
 
     private init() {
         // Find tmux path
+        self.isTmuxInstalled = Shell.commandExists("tmux")
         self.tmuxPath = Shell.commandPath("tmux") ?? "/opt/homebrew/bin/tmux"
+    }
+
+    /// Check if tmux is installed
+    func checkTmuxInstallation() -> Bool {
+        return isTmuxInstalled
     }
 
     // MARK: - Session Operations

@@ -95,6 +95,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func updateMenu() {
         let menu = NSMenu()
 
+        // Check if tmux is installed
+        if !TmuxService.shared.isTmuxInstalled {
+            let notInstalledItem = NSMenuItem(title: "tmux is not installed", action: nil, keyEquivalent: "")
+            notInstalledItem.isEnabled = false
+            menu.addItem(notInstalledItem)
+
+            let installItem = NSMenuItem(title: "Install tmux (brew install tmux)", action: #selector(installTmux), keyEquivalent: "")
+            installItem.target = self
+            menu.addItem(installItem)
+
+            menu.addItem(NSMenuItem.separator())
+
+            let quitItem = NSMenuItem(title: "Quit TmuxBar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+            menu.addItem(quitItem)
+
+            statusItem.menu = menu
+            return
+        }
+
         let favorites = sessionManager.favoriteSessions
         let groups = sessionManager.groupedSessions
         let others = sessionManager.ungroupedSessions.filter { !favorites.contains($0) }
@@ -394,6 +413,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func refreshSessions() {
         sessionManager.refreshSessions()
+    }
+
+    @objc private func installTmux() {
+        // Open Terminal and run brew install tmux
+        let script = """
+        tell application "Terminal"
+            activate
+            do script "brew install tmux && echo '\\n✅ tmux installed! Please restart TmuxBar.'"
+        end tell
+        """
+
+        if let appleScript = NSAppleScript(source: script) {
+            var error: NSDictionary?
+            appleScript.executeAndReturnError(&error)
+            if let error = error {
+                print("Failed to run install script: \(error)")
+                // Fallback: open Homebrew website
+                if let url = URL(string: "https://brew.sh") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+        }
     }
 
     private func attachFavoriteSession(at index: Int) {

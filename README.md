@@ -186,6 +186,10 @@ mac/
 
 ## Changelog
 
+### v1.0.4
+- Add tmux installation check on startup
+- Show helpful message and install option when tmux is not installed
+
 ### v1.0.3
 - Fix text input in New Session dialog (use KeyablePanel)
 - Improve window focus handling for menu bar app
