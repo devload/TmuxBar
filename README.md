@@ -25,8 +25,16 @@ A native macOS menu bar application for managing tmux sessions.
 ### Homebrew
 
 ```bash
+# Install
 brew tap devload/tmuxbar
 brew install --cask tmuxbar
+
+# Update
+brew upgrade --cask tmuxbar
+
+# Uninstall
+brew uninstall --cask tmuxbar
+brew untap devload/tmuxbar
 ```
 
 ### Build from Source
