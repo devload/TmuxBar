@@ -2,6 +2,12 @@ import AppKit
 import SwiftUI
 import Combine
 
+// Custom panel that can become key window for text input
+final class KeyablePanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var sessionManager: SessionManager!
@@ -298,9 +304,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.newSessionWindow = nil
             }
 
-            newSessionWindow = NSWindow(
+            newSessionWindow = KeyablePanel(
                 contentRect: NSRect(x: 0, y: 0, width: 350, height: 200),
-                styleMask: [.titled, .closable],
+                styleMask: [.titled, .closable, .nonactivatingPanel],
                 backing: .buffered,
                 defer: false
             )
@@ -308,10 +314,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             newSessionWindow?.contentView = NSHostingView(rootView: view)
             newSessionWindow?.center()
             newSessionWindow?.isReleasedWhenClosed = false
+            newSessionWindow?.level = .floating
+            newSessionWindow?.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         }
 
-        newSessionWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        newSessionWindow?.makeKeyAndOrderFront(nil)
     }
 
     @objc private func showTemplateWindow() {
@@ -326,9 +334,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             )
 
-            templateWindow = NSWindow(
+            templateWindow = KeyablePanel(
                 contentRect: NSRect(x: 0, y: 0, width: 400, height: 500),
-                styleMask: [.titled, .closable],
+                styleMask: [.titled, .closable, .nonactivatingPanel],
                 backing: .buffered,
                 defer: false
             )
@@ -336,10 +344,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             templateWindow?.contentView = NSHostingView(rootView: view)
             templateWindow?.center()
             templateWindow?.isReleasedWhenClosed = false
+            templateWindow?.level = .floating
+            templateWindow?.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         }
 
-        templateWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        templateWindow?.makeKeyAndOrderFront(nil)
     }
 
     @objc private func showPreview(_ sender: NSMenuItem) {
@@ -364,9 +374,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func showPreferences() {
         if preferencesWindow == nil {
-            preferencesWindow = NSWindow(
+            preferencesWindow = KeyablePanel(
                 contentRect: NSRect(x: 0, y: 0, width: 450, height: 400),
-                styleMask: [.titled, .closable],
+                styleMask: [.titled, .closable, .nonactivatingPanel],
                 backing: .buffered,
                 defer: false
             )
@@ -374,10 +384,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             preferencesWindow?.contentView = NSHostingView(rootView: PreferencesView())
             preferencesWindow?.center()
             preferencesWindow?.isReleasedWhenClosed = false
+            preferencesWindow?.level = .floating
+            preferencesWindow?.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         }
 
-        preferencesWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        preferencesWindow?.makeKeyAndOrderFront(nil)
     }
 
     @objc private func refreshSessions() {

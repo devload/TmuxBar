@@ -186,6 +186,10 @@ mac/
 
 ## Changelog
 
+### v1.0.3
+- Fix text input in New Session dialog (use KeyablePanel)
+- Improve window focus handling for menu bar app
+
 ### v1.0.2
 - Fix app termination when closing dialogs with ESC
 - Prevent duplicate app instances from running
