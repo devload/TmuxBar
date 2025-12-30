@@ -184,6 +184,18 @@ mac/
     └── screenshot-menu.png
 ```
 
+## Changelog
+
+### v1.0.2
+- Fix app termination when closing dialogs with ESC
+- Prevent duplicate app instances from running
+
+### v1.0.1
+- Enable launch at login by default
+
+### v1.0.0
+- Initial release
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
