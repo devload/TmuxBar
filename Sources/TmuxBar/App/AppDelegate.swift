@@ -15,6 +15,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var previewSession: TmuxSession?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Check for duplicate instance using process name
+        let currentPID = ProcessInfo.processInfo.processIdentifier
+        let runningApps = NSWorkspace.shared.runningApplications
+        let tmuxBarApps = runningApps.filter {
+            ($0.localizedName == "TmuxBar" || $0.executableURL?.lastPathComponent == "TmuxBar")
+            && $0.processIdentifier != currentPID
+        }
+        if !tmuxBarApps.isEmpty {
+            // Another instance is already running
+            NSApp.terminate(nil)
+            return
+        }
+
         // Hide dock icon - menu bar only app
         NSApp.setActivationPolicy(.accessory)
 
@@ -39,6 +52,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.updateMenu()
             }
             .store(in: &cancellables)
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        // Keep app running even when all windows are closed (menu bar app)
+        return false
     }
 
     private func setupStatusBar() {
@@ -289,6 +307,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             newSessionWindow?.title = "New Session"
             newSessionWindow?.contentView = NSHostingView(rootView: view)
             newSessionWindow?.center()
+            newSessionWindow?.isReleasedWhenClosed = false
         }
 
         newSessionWindow?.makeKeyAndOrderFront(nil)
@@ -316,6 +335,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             templateWindow?.title = "New from Template"
             templateWindow?.contentView = NSHostingView(rootView: view)
             templateWindow?.center()
+            templateWindow?.isReleasedWhenClosed = false
         }
 
         templateWindow?.makeKeyAndOrderFront(nil)
@@ -353,6 +373,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             preferencesWindow?.title = "TmuxBar Preferences"
             preferencesWindow?.contentView = NSHostingView(rootView: PreferencesView())
             preferencesWindow?.center()
+            preferencesWindow?.isReleasedWhenClosed = false
         }
 
         preferencesWindow?.makeKeyAndOrderFront(nil)
