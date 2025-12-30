@@ -186,6 +186,10 @@ mac/
 
 ## Changelog
 
+### v1.0.5
+- Check for Homebrew before offering tmux install
+- Show brew.sh link when Homebrew is not installed
+
 ### v1.0.4
 - Add tmux installation check on startup
 - Show helpful message and install option when tmux is not installed

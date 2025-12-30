@@ -97,13 +97,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Check if tmux is installed
         if !TmuxService.shared.isTmuxInstalled {
-            let notInstalledItem = NSMenuItem(title: "tmux is not installed", action: nil, keyEquivalent: "")
+            let notInstalledItem = NSMenuItem(title: "⚠️ tmux is not installed", action: nil, keyEquivalent: "")
             notInstalledItem.isEnabled = false
             menu.addItem(notInstalledItem)
 
-            let installItem = NSMenuItem(title: "Install tmux (brew install tmux)", action: #selector(installTmux), keyEquivalent: "")
-            installItem.target = self
-            menu.addItem(installItem)
+            // Check if Homebrew is installed
+            let brewInstalled = Shell.commandExists("brew")
+
+            if brewInstalled {
+                let installItem = NSMenuItem(title: "Install tmux (brew install tmux)", action: #selector(installTmux), keyEquivalent: "")
+                installItem.target = self
+                menu.addItem(installItem)
+            } else {
+                let noBrewItem = NSMenuItem(title: "Homebrew not found", action: nil, keyEquivalent: "")
+                noBrewItem.isEnabled = false
+                menu.addItem(noBrewItem)
+
+                let openBrewItem = NSMenuItem(title: "Open brew.sh to install Homebrew", action: #selector(openHomebrew), keyEquivalent: "")
+                openBrewItem.target = self
+                menu.addItem(openBrewItem)
+            }
 
             menu.addItem(NSMenuItem.separator())
 
@@ -429,11 +442,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             appleScript.executeAndReturnError(&error)
             if let error = error {
                 print("Failed to run install script: \(error)")
-                // Fallback: open Homebrew website
-                if let url = URL(string: "https://brew.sh") {
-                    NSWorkspace.shared.open(url)
-                }
+                openHomebrew()
             }
+        }
+    }
+
+    @objc private func openHomebrew() {
+        if let url = URL(string: "https://brew.sh") {
+            NSWorkspace.shared.open(url)
         }
     }
 
