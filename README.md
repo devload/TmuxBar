@@ -16,26 +16,11 @@ A native macOS menu bar application for managing tmux sessions.
 
 ## Installation
 
-### Download DMG (Recommended)
+### Download DMG
 
 1. Download the latest `TmuxBar-x.x.x.dmg` from [Releases](https://github.com/devload/TmuxBar/releases)
 2. Open the DMG and drag TmuxBar to Applications
-3. First launch: Right-click → Open (to bypass Gatekeeper)
-
-### Homebrew
-
-```bash
-# Install
-brew tap devload/tmuxbar
-brew install --cask tmuxbar
-
-# Update
-brew upgrade --cask tmuxbar
-
-# Uninstall
-brew uninstall --cask tmuxbar
-brew untap devload/tmuxbar
-```
+3. **First launch**: Right-click the app → **Open** (required to bypass Gatekeeper since the app is not code-signed)
 
 ### Build from Source
 
